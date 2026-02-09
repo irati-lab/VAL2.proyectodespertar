@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio de Pensamiento Crítico</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Efectos de Cristal y Neón */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .neon-text-teal {
+            text-shadow: 0 0 10px rgba(45, 212, 191, 0.5), 0 0 20px rgba(45, 212, 191, 0.3);
+        }
+
+        .neon-box {
+            box-shadow: 0 0 15px rgba(45, 212, 191, 0.2), inset 0 0 10px rgba(45, 212, 191, 0.1);
+            border: 1px solid rgba(45, 212, 191, 0.3);
+        }
+
+        .tv-screen-border {
+            border: 1px solid rgba(255,255,255,0.05);
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%);
+        }
+
+        /* Animaciones */
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
+        .bar-grow {
+            transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Botón Activo */
+        .nav-btn.active {
+            background: rgba(45, 212, 191, 0.15);
+            color: #2dd4bf; /* Teal 400 */
+            border: 1px solid rgba(45, 212, 191, 0.3);
+            box-shadow: 0 0 15px rgba(45, 212, 191, 0.15);
+        }
+
+        /* Modo Profesor */
+        .teacher-mode-active {
+            border: 1px solid #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        /* Intro Screen specific */
+        .glitch-wrapper {
+            position: relative;
+        }
+        
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(45, 212, 191, 0.1) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 10s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100px; }
+        }
+        
+        /* Interactive Elements */
+        .interactive-round {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .interactive-round:hover {
+            transform: scale(1.05);
+            border-color: #2dd4bf;
+        }
+        .interactive-round.active-round {
+            background-color: #0f766e; /* Teal 700 */
+            border-color: #2dd4bf;
+            box-shadow: 0 0 15px rgba(45, 212, 191, 0.3);
+        }
+        
+        .score-panel {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .score-panel:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- HEADER (Se oculta en la bienvenida) -->
+    <header id="main-header" class="sticky top-0 z-50 glass-panel border-b border-slate-700/50 hidden opacity-0 transition-opacity duration-1000">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3 group">
+                <div class="p-2 bg-teal-500/10 rounded-lg border border-teal-500/20 group-hover:border-teal-400 transition-colors">
+                    <i class="ph ph-brain text-3xl text-teal-400 neon-text-teal"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight text-white uppercase">Mind<span class="text-teal-400">Lab</span></h1>
+                    <p class="text-xs text-slate-400 tracking-widest uppercase">Laboratorio de Percepción</p>
+                </div>
+            </div>
+            
+            <nav class="flex gap-2 bg-slate-800/50 p-1.5 rounded-xl border border-slate-700/50">
+                <button onclick="switchTab('asch')" id="btn-asch" class="nav-btn flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-slate-400 hover:text-white transition-all">
+                    <i class="ph ph-eye text-lg"></i> Dinámica 1
+                </button>
+                <button onclick="switchTab('letras')" id="btn-letras" class="nav-btn flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-slate-400 hover:text-white transition-all">
+                    <i class="ph ph-users-three text-lg"></i> Dinámica 2
+                </button>
+                <button onclick="switchTab('teoria')" id="btn-teoria" class="nav-btn flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold text-slate-400 hover:text-white transition-all">
+                    <i class="ph ph-lightbulb text-lg"></i> Reflexión
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow max-w-7xl mx-auto px-6 py-8 w-full relative">
+        
+        <!-- TEACHER TOGGLE (Discreto arriba a la derecha) -->
+        <div class="absolute top-0 right-6 z-10">
+            <button onclick="toggleTeacherMode()" id="teacher-btn" class="flex items-center gap-2 text-[10px] uppercase tracking-wider px-3 py-1.5 rounded-full border border-slate-700 text-slate-600 hover:border-slate-500 hover:text-slate-400 transition-all">
+                <i class="ph ph-lock-key"></i> Modo Profesor
+            </button>
+        </div>
+
+        <!-- CONTENEDOR DINÁMICO -->
+        <div id="content-area" class="mt-8 h-full flex flex-col justify-center">
+            <!-- El contenido se inyectará aquí vía JS -->
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800/50 bg-slate-900/50 py-8 mt-auto">
+        <div class="text-center text-slate-600 text-sm">
+            <p class="font-bold text-slate-500 mb-2">&copy; 2026 Xanti Lizeaga Urdangarin</p>
+            <p>Clase de Valores Éticos. <span class="text-slate-700 mx-2">|</span> La verdad no es democrática.</p>
+            <p class="text-[10px] text-slate-700 mt-4 uppercase tracking-widest">Licencia de uso educativo · Prohibida su venta</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- ESTADO DE LA APLICACIÓN ---
+        let currentTab = 'welcome'; // Estado inicial: Bienvenida
+        let teacherMode = false;
+        
+        // Estado Dinámica 1 (Asch + Cultura)
+        let aschRound = 0;
+        const aschData = [
+            // Rondas Visuales (1-4)
+            { type: 'visual', id: 1, target: 100, options: [60, 100, 140, 40, 180], correctIndex: 1, confederateMsg: "VERDAD: Decid todos la Opción B", note: "Ronda de control. Generamos confianza." },
+            { type: 'visual', id: 2, target: 120, options: [120, 125, 70, 180, 50], correctIndex: 0, confederateMsg: "MENTID: Decid Opción B (La que se parece)", note: "Presión sutil: La B es casi igual, pero incorrecta." },
+            { type: 'visual', id: 3, target: 80, options: [140, 80, 75, 50, 180], correctIndex: 1, confederateMsg: "MENTID: Decid Opción C (La casi igual)", note: "El sujeto dudará si falla su vista." },
+            { type: 'visual', id: 4, target: 150, options: [100, 150, 155, 190, 60], correctIndex: 1, confederateMsg: "MENTID: Decid Opción C (Ligeramente más larga)", note: "Presión final visual." },
+            // Rondas Culturales (5-6)
+            { 
+                type: 'text', 
+                id: 5, 
+                icon: 'ph-bank', 
+                question: "¿Dónde se encuentra este monumento (El Partenón)?", 
+                options: ["Roma", "París", "Atenas", "Estambul"], 
+                correctIndex: 2, // Atenas
+                confederateMsg: "MENTID: Decid todos ROMA (Opción A)", 
+                note: "Presión cultural. Muchos templos están en Roma. Hacedle dudar de su memoria."
+            },
+            { 
+                type: 'text', 
+                id: 6, 
+                icon: 'ph-church', 
+                question: "¿Qué ciudad rodea completamente a la Ciudad del Vaticano?", 
+                options: ["Florencia", "Roma", "Milán", "Nápoles"], 
+                correctIndex: 1, // Roma
+                confederateMsg: "MENTID: Decid todos FLORENCIA (Opción A)", 
+                note: "Es absurdo, pero si todos lo decís con seguridad, dudará."
+            }
+        ];
+
+        // Estado Dinámica 2 (Letras/Indefensión)
+        let letrasScores = { g1: 0, g2: 0 };
+        let currentLetrasRound = 0;
+        const letrasData = [
+            { 
+                ronda: 1, letters: 4, 
+                g1: { s: "ZUQA", a: "IMPOSIBLE" }, 
+                g2: { s: "AORM", a: "AMOR / ROMA" }  
+            },
+            { 
+                ronda: 2, letters: 4, 
+                g1: { s: "BEKI", a: "IMPOSIBLE" }, 
+                g2: { s: "AAPT", a: "PATA / TAPA" } 
+            },
+            { 
+                ronda: 3, letters: 5, 
+                g1: { s: "WOQYA", a: "IMPOSIBLE" }, 
+                g2: { s: "ARFES", a: "FRESA / FRASE" } 
+            },
+            { 
+                ronda: 4, letters: 6, 
+                g1: { s: "XUWEQJ", a: "IMPOSIBLE" }, 
+                g2: { s: "CUIDAD", a: "CIUDAD / CUIDAD" } 
+            },
+            { 
+                ronda: 5, letters: 6, 
+                g1: { s: "KIVYZO", a: "IMPOSIBLE" }, 
+                g2: { s: "MUSIC A", a: "MUSICA" } 
+            },
+            { 
+                ronda: 6, letters: 6, 
+                g1: { s: "ESPEJO", a: "ESPEJO" }, 
+                g2: { s: "ESPEJO", a: "ESPEJO" } 
+            }
+        ];
+
+        // --- FUNCIONES DE NAVEGACIÓN ---
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            const header = document.getElementById('main-header');
+            if(header.classList.contains('hidden')) {
+                header.classList.remove('hidden');
+                setTimeout(() => header.classList.remove('opacity-0'), 50);
+            }
+
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.getElementById(`btn-${tab}`);
+            if(btn) btn.classList.add('active');
+            
+            renderContent();
+        }
+
+        function toggleTeacherMode() {
+            teacherMode = !teacherMode;
+            const btn = document.getElementById('teacher-btn');
+            if (teacherMode) {
+                btn.classList.remove('text-slate-600', 'border-slate-700');
+                btn.classList.add('text-amber-500', 'border-amber-500', 'bg-amber-900/20');
+                btn.innerHTML = `<i class="ph ph-lock-key-open"></i> MODO PROFESOR ACTIVO`;
+            } else {
+                btn.classList.add('text-slate-600', 'border-slate-700');
+                btn.classList.remove('text-amber-500', 'border-amber-500', 'bg-amber-900/20');
+                btn.innerHTML = `<i class="ph ph-lock-key"></i> MODO PROFESOR`;
+            }
+            renderContent();
+        }
+
+        // --- RENDERIZADO PRINCIPAL ---
+        function renderContent() {
+            const container = document.getElementById('content-area');
+            container.innerHTML = ''; 
+
+            if (currentTab === 'welcome') renderWelcome(container);
+            else if (currentTab === 'asch') renderAsch(container);
+            else if (currentTab === 'letras') renderLetras(container);
+            else if (currentTab === 'teoria') renderTeoria(container);
+        }
+
+        // --- RENDERIZADO: BIENVENIDA ---
+        function renderWelcome(container) {
+            let html = `
+                <div class="fade-in flex flex-col items-center justify-center min-h-[60vh] text-center relative z-10">
+                    <div class="scanline"></div>
+                    
+                    <div class="mb-8 relative">
+                        <i class="ph ph-fingerprint text-9xl text-slate-700 animate-pulse"></i>
+                        <i class="ph ph-fingerprint text-9xl text-teal-500 absolute top-0 left-0 opacity-20 blur-sm pulse-slow"></i>
+                    </div>
+
+                    <h1 class="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-200 via-white to-teal-200 mb-6 tracking-tighter uppercase drop-shadow-[0_0_25px_rgba(45,212,191,0.3)]">
+                        Proyecto:<br>Despertar
+                    </h1>
+                    
+                    <p class="text-xl md:text-2xl text-slate-400 max-w-2xl mx-auto mb-12 font-light">
+                        ¿Estás seguro de que lo que ves es real? <br>
+                        <span class="text-teal-400 font-mono text-sm mt-2 block">INICIANDO PROTOCOLO DE DESCONSTRUCCIÓN...</span>
+                    </p>
+
+                    <button onclick="switchTab('asch')" class="group relative px-8 py-4 bg-transparent overflow-hidden rounded-full border border-teal-500/50 hover:border-teal-400 transition-all">
+                        <div class="absolute inset-0 w-0 bg-teal-500 transition-all duration-[250ms] ease-out group-hover:w-full opacity-10"></div>
+                        <span class="relative flex items-center gap-3 text-lg font-bold text-teal-400 group-hover:text-teal-300 uppercase tracking-widest">
+                            Ingresar al Sistema <i class="ph ph-arrow-right"></i>
+                        </span>
+                    </button>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        // --- RENDERIZADO: DINÁMICA 1 (ASCH + TEXTO) ---
+        function renderAsch(container) {
+            const round = aschData[aschRound];
+            
+            // --- BLOQUE COMÚN: CABECERA Y SECRETOS ---
+            const secretsHtml = teacherMode ? `
+                <div class="w-full max-w-2xl bg-amber-900/30 border border-amber-600/50 p-6 rounded-xl animate-pulse mt-6 mx-auto">
+                    <h4 class="text-amber-500 font-bold flex items-center gap-2 mb-2 uppercase tracking-wider">
+                        <i class="ph ph-warning-circle text-xl"></i> Instrucción Secreta
+                    </h4>
+                    <p class="text-2xl text-white font-black">${round.confederateMsg}</p>
+                    <p class="text-amber-200/60 mt-2 text-sm">${round.note}</p>
+                </div>
+            ` : '';
+
+            const controlsHtml = `
+                <div class="flex gap-4 items-center bg-slate-800 p-2 rounded-xl border border-slate-700 mt-8 mx-auto w-fit">
+                    <button onclick="prevAsch()" ${aschRound === 0 ? 'disabled' : ''} class="px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white disabled:opacity-30 transition-colors">
+                        <i class="ph ph-arrow-left font-bold"></i>
+                    </button>
+                    <span class="font-mono text-xl px-4 text-teal-400 font-bold">RONDA ${aschRound + 1} / ${aschData.length}</span>
+                    <button onclick="nextAsch()" ${aschRound === aschData.length - 1 ? 'disabled' : ''} class="px-6 py-3 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-bold shadow-lg shadow-teal-900/20 transition-all disabled:opacity-30 disabled:shadow-none">
+                        SIGUIENTE <i class="ph ph-arrow-right font-bold ml-2"></i>
+                    </button>
+                </div>
+            `;
+
+            // --- LÓGICA DE VISUALIZACIÓN ---
+            if (round.type === 'visual') {
+                // RENDERIZADO VISUAL (BARRAS)
+                let visualHtml = `
+                    <div class="fade-in space-y-10">
+                        <div class="text-center space-y-2">
+                            <h2 class="text-4xl font-black text-white uppercase tracking-tight">Test de Agudeza Visual</h2>
+                            <p class="text-slate-400 text-lg">Indica qué línea coincide EXACTAMENTE con la referencia.</p>
+                        </div>
+
+                        <div class="glass-panel rounded-3xl p-8 min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
+                            
+                            <div class="flex flex-col md:flex-row items-end justify-center gap-12 w-full z-10 px-4">
+                                <div class="flex flex-col items-center gap-6 w-full md:w-1/6">
+                                    <div class="w-12 bg-slate-100 rounded-t-lg shadow-[0_0_30px_rgba(255,255,255,0.3)] bar-grow" style="height: ${round.target * 2}px;"></div>
+                                    <span class="font-bold text-white text-xl tracking-widest bg-slate-800 px-3 py-1 rounded-full border border-slate-600">REF</span>
+                                </div>
+                                <div class="h-[400px] w-px bg-gradient-to-b from-transparent via-slate-500 to-transparent hidden md:block"></div>
+                                <div class="flex justify-between items-end gap-4 w-full md:w-4/6">
+                                    ${round.options.map((h, i) => `
+                                        <div class="flex flex-col items-center gap-4 flex-1 group cursor-pointer transition-transform hover:-translate-y-2">
+                                            <div class="w-full max-w-[50px] bg-teal-600/50 group-hover:bg-teal-400 rounded-t-lg border border-teal-500/30 group-hover:shadow-[0_0_30px_rgba(45,212,191,0.6)] transition-all duration-500 bar-grow" style="height: ${h * 2}px;"></div>
+                                            <span class="font-bold text-slate-400 group-hover:text-teal-400 text-2xl border-2 border-slate-700 group-hover:border-teal-400 rounded-full w-10 h-10 flex items-center justify-center transition-all">
+                                                ${String.fromCharCode(65 + i)}
+                                            </span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        ${secretsHtml}
+                        ${controlsHtml}
+                    </div>
+                `;
+                container.innerHTML = visualHtml;
+            } else {
+                // RENDERIZADO TEXTO (CULTURA)
+                let textHtml = `
+                    <div class="fade-in space-y-10">
+                        <div class="text-center space-y-2">
+                            <h2 class="text-4xl font-black text-white uppercase tracking-tight">Evaluación Cultural</h2>
+                            <p class="text-slate-400 text-lg">Responde correctamente a la pregunta planteada.</p>
+                        </div>
+
+                        <div class="glass-panel rounded-3xl p-12 min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden text-center">
+                            <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,rgba(45,212,191,0.05)_0%,transparent_70%)] opacity-50 pointer-events-none"></div>
+                            
+                            <!-- Icono Grande -->
+                            <div class="mb-8 p-6 bg-slate-800 rounded-full border border-slate-600 shadow-xl">
+                                <i class="ph ${round.icon} text-8xl text-teal-400"></i>
+                            </div>
+
+                            <!-- Pregunta -->
+                            <h3 class="text-3xl md:text-5xl font-bold text-white mb-12 max-w-4xl leading-tight">
+                                ${round.question}
+                            </h3>
+
+                            <!-- Opciones -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+                                ${round.options.map((opt, i) => `
+                                    <div class="group bg-slate-800/50 border border-slate-600 hover:border-teal-500 hover:bg-slate-800 p-6 rounded-xl flex items-center gap-4 cursor-pointer transition-all">
+                                        <span class="flex-shrink-0 w-12 h-12 rounded-full border-2 border-slate-500 group-hover:border-teal-400 flex items-center justify-center font-bold text-slate-400 group-hover:text-teal-400 text-xl transition-colors">
+                                            ${String.fromCharCode(65 + i)}
+                                        </span>
+                                        <span class="text-2xl font-bold text-slate-300 group-hover:text-white text-left">${opt}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ${secretsHtml}
+                        ${controlsHtml}
+                    </div>
+                `;
+                container.innerHTML = textHtml;
+            }
+        }
+
+        function nextAsch() {
+            if (aschRound < aschData.length - 1) {
+                aschRound++;
+                renderContent();
+            }
+        }
+        function prevAsch() {
+            if (aschRound > 0) {
+                aschRound--;
+                renderContent();
+            }
+        }
+
+        // --- RENDERIZADO: DINÁMICA 2 (LETRAS) ---
+        function renderLetras(container) {
+            const currentRoundData = letrasData[currentLetrasRound];
+            
+            let html = `
+                <div class="fade-in space-y-8">
+                    <!-- Título Show TV -->
+                    <div class="relative bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-900 rounded-3xl p-12 text-center border border-purple-500/30 overflow-hidden shadow-2xl">
+                        <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.4)_0%,transparent_70%)] opacity-50"></div>
+                        
+                        <h2 class="relative z-10 text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-purple-300 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)] tracking-tighter mb-2">
+                            CIFRAS Y LETRAS
+                        </h2>
+                        <p class="relative z-10 text-xl text-purple-200 uppercase tracking-[0.5em] font-bold">La Competición</p>
+                    </div>
+
+                    <!-- SELECCIÓN DE RONDAS (INTERACTIVA) -->
+                    <div class="flex flex-wrap justify-center gap-4">
+                        ${letrasData.map((r, i) => `
+                            <div onclick="setLetrasRound(${i})" 
+                                 class="interactive-round px-4 py-3 rounded-lg border-2 text-center w-24 relative overflow-hidden ${i === currentLetrasRound ? 'active-round text-white font-bold' : 'bg-slate-800 border-slate-700 text-slate-500'} ${r.ronda === 6 ? 'border-red-500/50' : ''}">
+                                ${r.ronda === 6 ? '<div class="absolute top-0 right-0 bg-red-600 w-3 h-3 rounded-bl-full"></div>' : ''}
+                                <span class="block text-[10px] uppercase tracking-wider mb-1">Ronda</span>
+                                <span class="text-2xl font-mono">${r.ronda}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Datos de la Ronda Actual -->
+                    <div class="text-center">
+                        <span class="inline-block px-4 py-1 rounded-full bg-slate-800 border border-slate-600 text-slate-300 text-sm font-mono mb-4">
+                            LONGITUD: ${currentRoundData.letters} LETRAS
+                        </span>
+                        ${teacherMode ? `
+                            <div class="mx-auto max-w-4xl bg-amber-900/20 border-l-4 border-amber-500 p-6 rounded text-slate-300 shadow-xl text-left mt-4">
+                                <h3 class="text-amber-500 font-bold mb-3 flex items-center gap-2">
+                                    <i class="ph ph-chalkboard-teacher text-xl"></i> SOLUCIONARIO (Ronda ${currentRoundData.ronda})
+                                </h3>
+                                <div class="grid md:grid-cols-2 gap-8 font-mono text-sm">
+                                    <div class="bg-slate-950/30 p-3 rounded border border-slate-700">
+                                        <p class="text-slate-500 font-bold mb-1">GRUPO 1 (Manipulado/Imposible)</p>
+                                        <p>Dar letras: <strong class="text-white text-lg tracking-widest">${currentRoundData.g1.s}</strong></p>
+                                        <p>Solución: <span class="text-red-400">${currentRoundData.g1.a}</span></p>
+                                    </div>
+                                    <div class="bg-slate-950/30 p-3 rounded border border-slate-700">
+                                        <p class="text-slate-500 font-bold mb-1">GRUPO 2 (Ganador/Fácil)</p>
+                                        <p>Dar letras: <strong class="text-white text-lg tracking-widest">${currentRoundData.g2.s}</strong></p>
+                                        <p>Solución: <span class="text-green-400">${currentRoundData.g2.a}</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- PANELES DE GRUPOS Y PUNTUACIÓN -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                        
+                        <!-- GRUPO 1 -->
+                        <div onclick="addPoints('g1')" class="score-panel bg-slate-800/50 border-t-4 border-slate-500 p-8 rounded-xl text-center shadow-[0_0_20px_rgba(100,116,139,0.1)] hover:bg-slate-800 transition-colors group relative overflow-hidden">
+                            <div class="text-slate-500 font-bold tracking-widest mb-2">GRUPO 1</div>
+                            <div class="text-6xl font-black text-slate-300 mb-4 font-mono">${letrasScores.g1}</div>
+                            <div class="text-slate-500 text-sm">PUNTOS</div>
+                            <div class="absolute inset-0 bg-slate-500/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span class="font-bold text-slate-300">+${currentRoundData.letters} Puntos</span>
+                            </div>
+                        </div>
+
+                        <!-- GRUPO 2 -->
+                        <div onclick="addPoints('g2')" class="score-panel bg-slate-800/50 border-t-4 border-green-500 p-8 rounded-xl text-center shadow-[0_0_20px_rgba(34,197,94,0.1)] hover:bg-slate-800 transition-colors group relative overflow-hidden">
+                            <div class="text-green-500 font-bold tracking-widest mb-2">GRUPO 2</div>
+                            <div class="text-6xl font-black text-white mb-4 font-mono neon-text-teal">${letrasScores.g2}</div>
+                            <div class="text-green-500/70 text-sm">PUNTOS</div>
+                            <div class="absolute inset-0 bg-green-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span class="font-bold text-green-400">+${currentRoundData.letters} Puntos</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function setLetrasRound(index) {
+            currentLetrasRound = index;
+            renderContent();
+        }
+
+        function addPoints(group) {
+            const points = letrasData[currentLetrasRound].letters;
+            letrasScores[group] += points;
+            renderContent();
+        }
+
+        // --- RENDERIZADO: DINÁMICA 3 (TEORÍA) ---
+        function renderTeoria(container) {
+            let html = `
+                <div class="fade-in space-y-16 max-w-6xl mx-auto pb-12">
+                    
+                    <div class="text-center space-y-6">
+                        <h2 class="text-5xl font-black text-white">¿Qué acaba de pasar?</h2>
+                        <p class="text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
+                            No habéis fallado vosotros. Vuestro cerebro ha reaccionado exactamente como esperábamos.
+                            <br>Hemos replicado dos de los experimentos psicológicos más famosos de la historia.
+                        </p>
+                    </div>
+
+                    <!-- SECCIÓN 1: EL REVELADO DE LOS TRUCOS -->
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- Explicación ASCH -->
+                        <div class="bg-slate-800/50 border border-slate-700 p-8 rounded-2xl relative overflow-hidden group hover:border-teal-500/30 transition-all">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <i class="ph ph-eye text-9xl text-teal-400"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                                <span class="bg-teal-500/20 text-teal-400 px-3 py-1 rounded text-sm uppercase tracking-wider">Dinámica 1</span>
+                                El Experimento de Asch
+                            </h3>
+                            <div class="space-y-4 text-slate-300">
+                                <p>
+                                    En 1951, Solomon Asch demostró que <strong>el 75% de las personas niega lo que ven sus propios ojos</strong> si todo el grupo dice lo contrario.
+                                </p>
+                                <p>
+                                    En clase, los "cómplices" dieron respuestas erróneas a propósito. El sujeto "ingenuo", al ver que todos estaban de acuerdo en una respuesta absurda, empezó a dudar de su propia percepción o prefirió encajar antes que tener razón.
+                                </p>
+                                <div class="bg-slate-900/50 p-4 rounded-lg border-l-4 border-teal-500 italic text-slate-400">
+                                    "¿Me falla la vista o es que estoy loco? Mejor digo lo que dicen ellos."
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Explicación INDEFENSIÓN -->
+                        <div class="bg-slate-800/50 border border-slate-700 p-8 rounded-2xl relative overflow-hidden group hover:border-purple-500/30 transition-all">
+                            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <i class="ph ph-lock-key text-9xl text-purple-400"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                                <span class="bg-purple-500/20 text-purple-400 px-3 py-1 rounded text-sm uppercase tracking-wider">Dinámica 2</span>
+                                Indefensión Aprendida
+                            </h3>
+                            <div class="space-y-4 text-slate-300">
+                                <p>
+                                    <strong class="text-purple-400">El juego estaba trucado.</strong> El Grupo 1 recibió palabras inventadas o imposibles durante 5 rondas, mientras veían cómo el Grupo 2 acertaba fácilmente.
+                                </p>
+                                <p>
+                                    Esto condicionó vuestro cerebro. Aprendisteis que "hicieras lo que hicieras, ibas a fallar". Por eso, en la ronda final (la 6ª), aunque la palabra era fácil, os bloqueasteis. 
+                                </p>
+                                <div class="bg-slate-900/50 p-4 rounded-lg border-l-4 border-purple-500 italic text-slate-400">
+                                    Así nos manipula el sistema: haciéndonos creer que no tenemos poder para cambiar las cosas, para que dejemos de intentarlo.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NUEVA SECCIÓN: LA FÁBRICA DE LA REALIDAD -->
+                    <div class="neon-box bg-gradient-to-br from-slate-900 to-slate-800 p-8 md:p-12 rounded-3xl mt-12">
+                        <h3 class="text-3xl font-bold text-white mb-8 text-center flex items-center justify-center gap-3">
+                            <i class="ph ph-globe-hemisphere-west text-teal-400"></i> La Fábrica de la Realidad
+                        </h3>
+                        
+                        <div class="space-y-12">
+                            
+                            <!-- 1. Redes Sociales -->
+                            <div class="flex flex-col md:flex-row gap-8 items-start">
+                                <div class="shrink-0 p-4 bg-pink-500/10 rounded-xl text-pink-500">
+                                    <i class="ph ph-instagram-logo text-4xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-white mb-3">Redes Sociales y el Espejo Roto</h4>
+                                    <p class="text-slate-300 leading-relaxed">
+                                        ¿Recordáis el experimento de las líneas? Instagram y TikTok funcionan igual. Si todo el mundo usa filtros, se opera la nariz y viaja a Dubai, 
+                                        tu cerebro empieza a creer que <strong>tu vida normal y tu cara real son "la respuesta incorrecta"</strong>.
+                                        <br><br>
+                                        Vemos cuerpos imposibles (editados) y creemos que son la norma. Es una presión de grupo masiva que nos hace odiarnos a nosotros mismos por no encajar en un molde que ni siquiera existe.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- 2. Género y Emociones -->
+                            <div class="flex flex-col md:flex-row gap-8 items-start">
+                                <div class="shrink-0 p-4 bg-blue-500/10 rounded-xl text-blue-500">
+                                    <i class="ph ph-gender-intersex text-4xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-white mb-3">¿Quién te enseñó a sentir?</h4>
+                                    <p class="text-slate-300 leading-relaxed mb-4">
+                                        Nos dicen que "es natural" que los hombres sean fríos y las mujeres sensibles. <strong>Falso. Es aprendido.</strong>
+                                        <br>
+                                        Igual que aprendiste que no podías resolver el anagrama (indefensión), has aprendido reglas invisibles sobre tu género.
+                                    </p>
+                                    <div class="bg-slate-950/50 p-4 rounded-lg border-l-2 border-blue-500 text-sm text-slate-400">
+                                        <strong>La Prueba Cultural:</strong> En países como India o en el mundo árabe, es totalmente normal ver a dos hombres amigos cogidos de la mano paseando. Allí es un signo de amistad y hombría. 
+                                        En Occidente, nos han enseñado a verlo con miedo o prejuicio. Si el afecto fuera "biología", sería igual en todas partes. Como cambia, sabemos que es <strong>cultura</strong> (manipulación social).
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Separador -->
+                    <div class="h-px w-full bg-gradient-to-r from-transparent via-slate-600 to-transparent"></div>
+
+                    <!-- SECCIÓN 3: CONCEPTOS CLAVE -->
+                    <div class="space-y-8">
+                        <h3 class="text-3xl font-bold text-center text-white">Conceptos para tu Defensa</h3>
+                        
+                        <div class="grid md:grid-cols-3 gap-6">
+                            
+                            <!-- Presión Social -->
+                            <div class="bg-slate-800 p-6 rounded-xl border-t-4 border-pink-500 hover:-translate-y-2 transition-transform duration-300">
+                                <div class="mb-4 text-pink-500"><i class="ph ph-users-three text-4xl"></i></div>
+                                <h4 class="text-xl font-bold text-white mb-3">Presión Social</h4>
+                                <p class="text-slate-400 text-sm leading-relaxed">
+                                    La sociedad castiga al que piensa diferente. Ser crítico duele porque implica a veces quedarse solo. Pero recuerda: que millones de personas crean una tontería no la convierte en verdad.
+                                </p>
+                            </div>
+
+                            <!-- Dogma vs Ciencia -->
+                            <div class="bg-slate-800 p-6 rounded-xl border-t-4 border-blue-500 hover:-translate-y-2 transition-transform duration-300">
+                                <div class="mb-4 text-blue-500"><i class="ph ph-atom text-4xl"></i></div>
+                                <h4 class="text-xl font-bold text-white mb-3">Dogma vs. Ciencia</h4>
+                                <p class="text-slate-400 text-sm leading-relaxed">
+                                    El <strong>Dogma</strong> dice: <em>"Esto es así y punto"</em>. <br>
+                                    La <strong>Ciencia</strong> dice: <em>"Demuéstrame que me equivoco"</em>. <br>
+                                    El pensamiento crítico es aceptar la duda, no buscar certezas ciegas.
+                                </p>
+                            </div>
+
+                            <!-- La Ciencia Pública (ACTUALIZADO) -->
+                            <div class="bg-slate-800 p-6 rounded-xl border-t-4 border-amber-500 hover:-translate-y-2 transition-transform duration-300">
+                                <div class="mb-4 text-amber-500"><i class="ph ph-currency-dollar text-4xl"></i></div>
+                                <h4 class="text-xl font-bold text-white mb-3">Dinero y Verdad</h4>
+                                <p class="text-slate-400 text-sm leading-relaxed">
+                                    Imagina una tabacalera pagando un estudio para "demostrar" que fumar es sano, o una petrolera negando el cambio climático. <strong>Ha pasado.</strong>
+                                    <br><br>
+                                    Si la ciencia tiene dueño, la verdad se compra. Por eso la ciencia debe ser pública y rigurosamente vigilada por toda la <strong>COMUNIDAD CIENTÍFICA</strong>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel Final: CONCLUSIÓN -->
+                    <div class="mt-16 flex flex-col items-center text-center max-w-4xl mx-auto space-y-6">
+                        <i class="ph ph-shield-check text-6xl text-teal-400 mb-4 animate-bounce"></i>
+                        <h3 class="text-4xl md:text-5xl font-black text-white leading-tight">
+                            Tu Escudo es el <span class="text-teal-400">Pensamiento Crítico</span>
+                        </h3>
+                        <p class="text-xl text-slate-300">
+                            No aceptes verdades absolutas. Cuestiona, investiga y ten el valor de usar tu propia razón, aunque el grupo diga que esa línea es más corta o que "los hombres no lloran".
+                        </p>
+                        <div class="pt-6">
+                            <span class="px-8 py-4 bg-teal-600 text-white font-bold rounded-full shadow-[0_0_20px_rgba(45,212,191,0.4)]">
+                                SAPERE AUDE (Atrévete a saber)
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        // --- INICIALIZACIÓN ---
+        window.onload = function() {
+            renderContent(); // Renderiza Welcome por defecto
+        };
+
+    </script>
+</body>
+</html>
